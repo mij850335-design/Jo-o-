@@ -1,0 +1,100 @@
+--[[
+  Roblox teleport script com marcação de local, atravessa paredes e interface de abrir/fechar.
+  Deve ser colocado em StarterPlayerScripts.
+--]]
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+
+-- Variável para armazenar o local marcado
+local marcadoCFrame = nil
+
+-- Cria a interface GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "TeleportGui"
+screenGui.ResetOnSpawn = false
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 250, 0, 120)
+frame.Position = UDim2.new(0.5, -125, 0.5, -60)
+frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+frame.Visible = true
+frame.Parent = screenGui
+
+local marcarBtn = Instance.new("TextButton")
+marcarBtn.Size = UDim2.new(0, 230, 0, 30)
+marcarBtn.Position = UDim2.new(0, 10, 0, 10)
+marcarBtn.Text = "Marcar Local"
+marcarBtn.Parent = frame
+
+local aplicarBtn = Instance.new("TextButton")
+aplicarBtn.Size = UDim2.new(0, 230, 0, 30)
+aplicarBtn.Position = UDim2.new(0, 10, 0, 50)
+aplicarBtn.Text = "Aplicar (Teleportar)"
+aplicarBtn.Parent = frame
+
+local fecharBtn = Instance.new("TextButton")
+fecharBtn.Size = UDim2.new(0, 230, 0, 20)
+fecharBtn.Position = UDim2.new(0, 10, 0, 90)
+fecharBtn.Text = "Fechar"
+fecharBtn.TextSize = 14
+fecharBtn.Parent = frame
+
+local abrirBtn = Instance.new("TextButton")
+abrirBtn.Size = UDim2.new(0, 60, 0, 30)
+abrirBtn.Position = UDim2.new(0, 20, 0, 20)
+abrirBtn.Text = "Abrir"
+abrirBtn.Visible = false
+abrirBtn.Parent = screenGui
+
+-- Funções dos botões
+marcarBtn.MouseButton1Click:Connect(function()
+    local character = LocalPlayer.Character
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        marcadoCFrame = character.HumanoidRootPart.CFrame
+        marcarBtn.Text = "Local Marcado!"
+        wait(1)
+        marcarBtn.Text = "Marcar Local"
+    end
+end)
+
+aplicarBtn.MouseButton1Click:Connect(function()
+    if marcadoCFrame then
+        local character = LocalPlayer.Character
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            -- Desativa colisão dos parts do personagem para atravessar parede
+            for _, part in ipairs(character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+            character.HumanoidRootPart.CFrame = marcadoCFrame + Vector3.new(0, 3, 0)
+            wait(0.5)
+            -- Reativa colisão depois de um tempo
+            for _, part in ipairs(character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = true
+                end
+            end
+        end
+    else
+        aplicarBtn.Text = "Marque um local primeiro!"
+        wait(1)
+        aplicarBtn.Text = "Aplicar (Teleportar)"
+    end
+end)
+
+fecharBtn.MouseButton1Click:Connect(function()
+    frame.Visible = false
+    abrirBtn.Visible = true
+end)
+
+abrirBtn.MouseButton1Click:Connect(function()
+    frame.Visible = true
+    abrirBtn.Visible = false
+end)
+
+-- Adiciona a GUI ao jogador
+screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
